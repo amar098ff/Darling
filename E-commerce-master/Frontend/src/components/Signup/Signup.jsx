@@ -1,43 +1,70 @@
-import React, { useState } from 'react'
-import Signup from '../../components/Signup/'
+import React from 'react'
+import { useState , useEffect} from 'react'
+import { FaUser } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
+import { IoEye } from "react-icons/io5";
+import { IoEyeOffOutline } from "react-icons/io5";
+import {Link} from 'react-router-dom'
+import axios from 'axios'
+import server from '../../server'
 
-const Signup = () => {
-  const [name,setName] =useState('')
-  const [email,setEmail]=useState('')
-  const [password,setPassword]=useState('')
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+
+
+function Signup() {
+  const[name,setName]= useState('')
+  const[email,setEmail]= useState('')
+  const [password,setPassword] = useState('')
   const [visible,setVisible]=useState(false)
-  const [avatar,setAvatar]=useState('')
-  const [msg,setMsg]=useState('')
-  const handleInput=(e)=>{
-    const file=e.target.files[0]
+  const[avatar,setAvatar]=useState('')
+  const[msg,setMsg]=useState('')
+  const[error,setError]=useState(false)
+
+  useEffect(() => {
+    return () => {
+      toast.dismiss();  // ✅ Clears all toasts on unmount
+    };
+  }, []);
+  
+
+   const handleInput=(e)=>{
+    const file = e.target.files[0]
     setAvatar(file)
-  }
-    const handleSubmit=(e)=>{
-      e.preventDefault()
-    }
+   } 
+
+  const handleSubmit=(e)=>{
+    e.preventDefault()
+   
+     
     const config = {headers:{"Content-type":"multipart/form-data"}}
-    const newForm = new FormData()
-    newForm.append("file",avatar)
-    newForm.append("name",name)
-    newForm.append("email",email)
-    newForm.append("password",password)
-    
-    axios.post(`${server}/create-user`,newForm,config).then((res)=>{
-      console.log(res)
-      setEmail('')
-      setName('')
-      setPassword('')
-      setAvatar('')
-      setMsg(res.data.message)  
-    }).catch((err)=>{
-      console.log(err)
-      setMsg('failed')
-    })
-      
+const newForm = new FormData()
+newForm.append("file",avatar)
+newForm.append("name",name)
+newForm.append("email",email)
+newForm.append("password",password)
+
+axios.post(`${server}/create-user`,newForm,config).then((res)=>{
+  console.log(res)
+  toast.success(res.data.message)
+  setEmail('')
+  setName('')
+  setPassword('')
+  setAvatar('')
+  //setMsg(res.data.message)  
+}).catch((err)=>{
+  console.log(err)
+  toast.error(err.response.data.message
+  
+    )
+  //setMsg(err.response.data.message)
+  setError(true)
+})
+  }
   return (
     <div className='flex flex-col box-border h-screen justify-center items-center bg-gray-100'>
-      {msg && error &&(<h1 className='text-red-600 font-bold text-2xl'>{msg}</h1>)}
-      {msg && (<h1 className='text-green-600 font-bold text-2xl'>{msg}</h1>)}
+     
       <div className='flex flex-col w-109 h-109   rounded-xl shadow-xl shawdow-black-600 bg-sky-100'>
         <div>
         <h1 className='text-center mt-5 text-2xl font-bold'>Create Account</h1>
@@ -53,7 +80,7 @@ const Signup = () => {
               <MdEmail className='mr-5 h-8 w-8'/>
             </div>
             <div  className='flex w-full h-8 mt-5 rounded-lg shadow-lg justify-center items-center  bg-slate-200'>
-              <input type={visible?"text":"password"} name='password' placeholder='password' required value={password} onChange={(e)=>setPassword(e.target.value)} className='w-full focus:outline-none ml-5 text-xl '/>
+              <input type={visible?"text":"password"} name='password' placeholder='password' minLength={8} required value={password} onChange={(e)=>setPassword(e.target.value)} className='w-full focus:outline-none ml-5 text-xl '/>
            {visible? (<IoEye onClick={()=>setVisible(false)} className='mr-5 h-8 w-8'/>): (<IoEyeOffOutline onClick={()=>setVisible(true)} className='mr-5 h-8 w-8'/>)}
             </div>
                <div className='flex flex-col w-full h-15 mt-5 rounded-lg shadow-lg justify-center items-center  bg-slate-200'>
@@ -72,4 +99,5 @@ const Signup = () => {
     </div>
   )
 }
+
 export default Signup
